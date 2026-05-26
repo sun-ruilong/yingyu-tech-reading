@@ -11,9 +11,10 @@ $stagingRoot = Join-Path $PSScriptRoot 'staging'
 $siteDir = Join-Path $stagingRoot 'yingyu'
 $codexDir = Join-Path $siteDir 'codex'
 $archive = Join-Path $PSScriptRoot 'yingyu-static.tar.gz'
-$sshKey = Join-Path $env:USERPROFILE '.ssh\yingyu_ecs_ed25519'
-$remote = 'root@8.134.169.227'
+$sshKey = Join-Path $env:USERPROFILE '.ssh\yingyu_tencent_ed25519'
+$remote = 'root@111.230.71.5'
 $remoteRoot = '/www/wwwroot/yingyu'
+$publicUrl = 'http://en.nextlong.cn/'
 
 if (-not $sourceDir -or -not (Test-Path -LiteralPath $sourceDir)) {
   throw "Source directory not found: $sourceDir"
@@ -284,4 +285,4 @@ ssh -i $sshKey $remote "mkdir -p '$remoteRoot'"
 scp -i $sshKey $archive "${remote}:/tmp/yingyu-static.tar.gz"
 ssh -i $sshKey $remote "set -e; rm -rf '${remoteRoot}.new'; mkdir -p '${remoteRoot}.new'; tar -xzf /tmp/yingyu-static.tar.gz -C '${remoteRoot}.new' --strip-components=1; if [ -d '$remoteRoot' ]; then rm -rf '${remoteRoot}.bak'; mv '$remoteRoot' '${remoteRoot}.bak'; fi; mv '${remoteRoot}.new' '$remoteRoot'; chown -R www:www '$remoteRoot' 2>/dev/null || true; chmod -R a+rX '$remoteRoot'; nginx -t && nginx -s reload"
 
-Write-Host "Deployed to http://8.134.169.227/"
+Write-Host "Deployed to $publicUrl"

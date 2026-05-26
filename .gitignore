@@ -11,6 +11,7 @@
 # Keep reusable deployment config/scripts, but never secrets or generated bundles.
 !.deploy/
 !.deploy/0.default.conf
+!.deploy/en.nextlong.cn.conf
 !.deploy/deploy_yingyu_static.ps1
 .deploy/staging/
 .deploy/*.tar.gz
