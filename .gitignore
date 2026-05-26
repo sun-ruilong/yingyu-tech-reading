@@ -1,0 +1,25 @@
+# Ignore everything in this Obsidian subfolder by default.
+*
+
+# Keep the static reading site project.
+!.gitignore
+!README.md
+!技术英文官方文档精读计划.md
+!读codex官方文档/
+!读codex官方文档/**
+
+# Keep reusable deployment config/scripts, but never secrets or generated bundles.
+!.deploy/
+!.deploy/0.default.conf
+!.deploy/deploy_yingyu_static.ps1
+.deploy/staging/
+.deploy/*.tar.gz
+.deploy/*ed25519*
+.deploy/*.key
+.deploy/*.pem
+.deploy/*.ppk
+
+# Local/system noise.
+*.log
+.DS_Store
+Thumbs.db

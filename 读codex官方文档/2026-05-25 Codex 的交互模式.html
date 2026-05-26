@@ -1,0 +1,1015 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>2026-05-25 Codex 的交互模式</title>
+  <style>
+    :root {
+      --ink: #151515;
+      --text: #232323;
+      --muted: #69716d;
+      --subtle: #8a918d;
+      --paper: #fbfaf6;
+      --wash: #f1f3ed;
+      --surface: #ffffff;
+      --surface-soft: #f7f8f3;
+      --line: #dfe4da;
+      --line-strong: #c9d1c4;
+      --accent: #3f7b63;
+      --accent-deep: #245b47;
+      --accent-soft: #e6f0ea;
+      --proper: #2563eb;
+      --tech: #7c3aed;
+      --verb: #059669;
+      --phrase: #d97706;
+      --pattern: #dc2626;
+      --confuse-bg: #fff3bf;
+      --confuse-text: #7c4a03;
+      --shadow: 0 18px 48px rgba(28, 33, 29, 0.10);
+      --shadow-soft: 0 8px 24px rgba(28, 33, 29, 0.07);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background:
+        linear-gradient(180deg, #f4f6f0 0%, #fbfaf6 330px, #f4f6f0 100%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 17px;
+      line-height: 1.8;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: linear-gradient(rgba(21,21,21,0.025) 1px, transparent 1px);
+      background-size: 100% 32px;
+      mask-image: linear-gradient(180deg, rgba(0,0,0,0.35), transparent 55%);
+    }
+    main {
+      position: relative;
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 34px 24px 96px;
+    }
+    .page-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .home-link {
+      display: inline-flex;
+      align-items: center;
+      min-height: 36px;
+      padding: 7px 12px;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.78);
+      color: var(--ink);
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(28, 33, 29, 0.06);
+    }
+    .home-link:hover {
+      border-color: var(--accent);
+      color: var(--accent-deep);
+      background: #fff;
+    }
+    .site-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .article-hero {
+      position: relative;
+      margin: 0 0 20px;
+      padding: 34px 34px 32px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.96), rgba(246,248,242,0.95));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      max-width: 100%;
+      min-width: 0;
+    }
+    .article-hero::after {
+      content: "READ";
+      position: absolute;
+      right: 24px;
+      bottom: -18px;
+      color: rgba(63, 123, 99, 0.08);
+      font-size: 86px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 0.03em;
+      pointer-events: none;
+    }
+    .hero-kicker {
+      position: relative;
+      z-index: 1;
+      margin-bottom: 10px;
+      color: var(--accent-deep);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    h1 {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      max-width: 760px;
+      color: var(--ink);
+      font-size: 34px;
+      line-height: 1.22;
+      letter-spacing: 0;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    h2 {
+      margin: 0 0 14px;
+      color: var(--ink);
+      font-size: 21px;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 16px 0 8px;
+      color: var(--ink);
+      font-size: 17px;
+      line-height: 1.45;
+      letter-spacing: 0;
+    }
+    p { margin: 0 0 12px; }
+    a { color: var(--proper); overflow-wrap: anywhere; }
+    code {
+      background: #eef2e8;
+      border: 1px solid #dce4d5;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 0.94em;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 22px;
+      margin: 18px 0;
+      background: rgba(255,255,255,0.9);
+      box-shadow: var(--shadow-soft);
+    }
+    .card > h2 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card > h2::before {
+      content: "";
+      width: 8px;
+      height: 22px;
+      border-radius: 999px;
+      background: var(--accent);
+      flex: 0 0 auto;
+    }
+    .info {
+      background: #fff;
+      border-color: var(--line-strong);
+    }
+    .info dl {
+      display: grid;
+      grid-template-columns: minmax(110px, 150px) 1fr;
+      gap: 9px 16px;
+      margin: 0;
+    }
+    .info dt {
+      color: var(--muted);
+      font-weight: 800;
+    }
+    .info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+    .note {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .toc-btn {
+      position: fixed;
+      left: 18px;
+      top: 18px;
+      width: 52px;
+      height: 52px;
+      border: 1px solid rgba(42, 68, 56, 0.18);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.88);
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0;
+      cursor: pointer;
+      box-shadow: 0 12px 30px rgba(28, 33, 29, 0.16);
+      backdrop-filter: blur(12px);
+      z-index: 1000;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+    }
+    .toc-btn:hover {
+      color: var(--accent-deep);
+      border-color: var(--accent);
+      transform: translateY(-1px);
+      box-shadow: 0 16px 36px rgba(28, 33, 29, 0.2);
+    }
+    .toc-btn:focus-visible,
+    .home-link:focus-visible,
+    .toc-panel {
+      position: fixed;
+      left: 18px;
+      top: 80px;
+      width: 250px;
+      max-width: calc(100vw - 36px);
+      border: 1px solid rgba(42, 68, 56, 0.18);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.96);
+      padding: 14px 16px;
+      box-shadow: 0 24px 54px rgba(28, 33, 29, 0.18);
+      backdrop-filter: blur(14px);
+      opacity: 0;
+      transform: translateY(-8px) scale(0.98);
+      pointer-events: none;
+      z-index: 1001;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    .toc-panel.open {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+    .toc-title {
+      color: var(--accent-deep);
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+    .toc-panel a {
+      display: block;
+      border-bottom: 1px solid #edf1e8;
+      padding: 8px 0;
+      color: #334139;
+      font-size: 14px;
+      line-height: 1.4;
+      text-decoration: none;
+    }
+    .toc-panel a:last-child { border-bottom: none; }
+    .toc-panel a:hover { color: var(--accent-deep); }
+    .legend-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.78);
+      padding: 10px 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+      margin: 16px 0 20px;
+      box-shadow: 0 6px 18px rgba(28, 33, 29, 0.05);
+    }
+    .legend-item { display: inline-flex; align-items: center; gap: 5px; }
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+    .source {
+      font-size: 18px;
+      line-height: 1.86;
+    }
+    .quote {
+      border-left: 4px solid var(--accent);
+      padding: 10px 0 10px 14px;
+      color: #37413b;
+      background: #f8faf5;
+      font-size: 16px;
+    }
+    .hint {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: -4px;
+      margin-bottom: 14px;
+    }
+    .sentence-unit {
+      position: relative;
+      padding: 12px 15px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      background: #fff;
+      transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+    }
+    .sentence-unit:hover {
+      background: #fbfcf8;
+      border-color: #d8e3d6;
+      box-shadow: 0 8px 22px rgba(28, 33, 29, 0.07);
+    }
+    .sentence-en {
+      color: #20231f;
+      font-size: 18px;
+      line-height: 1.82;
+    }
+    .sentence-zh {
+      font-size: 14px;
+      color: var(--muted);
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height 0.25s ease, opacity 0.2s ease, margin 0.2s ease;
+      margin-top: 0;
+    }
+    .sentence-unit:hover .sentence-zh {
+      max-height: 116px;
+      opacity: 1;
+      margin-top: 7px;
+    }
+    .speakable-sentence {
+      cursor: pointer;
+    }
+    .sentence-unit.speakable-sentence:hover,
+    .sentence-unit.speakable-sentence.playing {
+      border-color: #b9d0bc;
+      background: #f6faf5;
+    }
+    .sentence-unit.speakable-sentence.playing {
+      box-shadow: inset 0 -3px 0 var(--accent);
+    }
+    .analysis-card .sentence-en.speakable-sentence {
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    }
+    .analysis-card .sentence-en.speakable-sentence:hover,
+    .analysis-card .sentence-en.speakable-sentence.playing {
+      border-color: #b9d0bc;
+      background: #f6faf5;
+      box-shadow: inset 0 -3px 0 var(--accent);
+    }
+    .speakable-example,
+    .speakable-term {
+      cursor: pointer;
+      text-decoration: underline dotted rgba(100, 116, 139, 0.45);
+      text-underline-offset: 3px;
+    }
+    .speakable-example.playing,
+    .speakable-term.playing,
+    .speakable-word.playing {
+      background: var(--accent-soft);
+      border-radius: 4px;
+    }
+    .proper-noun { color: var(--proper); font-weight: 800; }
+    .tech-term { color: var(--tech); font-weight: 800; }
+    .action-verb { color: var(--verb); font-weight: 800; }
+    .key-phrase { color: var(--phrase); font-weight: 800; }
+    .sentence-pattern { color: var(--pattern); font-weight: 800; }
+    .confusing-word {
+      background: var(--confuse-bg);
+      color: var(--confuse-text);
+      border-radius: 4px;
+      padding: 0 4px;
+      font-weight: 800;
+    }
+    .confusing-word.speakable-word { padding: 0 4px; }
+    [data-tip] {
+      position: relative;
+      cursor: help;
+      border-bottom: 1.5px dotted rgba(32, 35, 31, 0.18);
+    }
+    .tip-layer {
+      position: fixed;
+      width: max-content;
+      max-width: min(360px, calc(100vw - 32px));
+      white-space: normal;
+      text-align: left;
+      line-height: 1.45;
+      background: #121512;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 7px 9px;
+      border-radius: 6px;
+      z-index: 3000;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(2px);
+      transition: opacity 0.12s ease, transform 0.12s ease;
+    }
+    .tip-layer.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .speakable-word {
+      cursor: pointer;
+      text-decoration: underline dotted rgba(100, 116, 139, 0.45);
+      text-underline-offset: 3px;
+    }
+    .analysis-section { margin: 22px 0; }
+    .analysis-card {
+      border: 1px solid #dce4d5;
+      border-radius: 8px;
+      background: #fff;
+      padding: 18px 20px;
+      margin: 14px 0;
+      box-shadow: 0 8px 22px rgba(28, 33, 29, 0.055);
+    }
+    .analysis-heading {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 10px;
+      margin: 0 0 12px;
+    }
+    .analysis-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 62px;
+      border-radius: 999px;
+      border: 1px solid #bfd1bf;
+      background: #edf5ee;
+      color: var(--accent-deep);
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1;
+      padding: 7px 10px;
+    }
+    .analysis-title {
+      color: #3d493f;
+      font-size: 15px;
+      font-weight: 800;
+    }
+    .analysis-card p { margin: 9px 0; }
+    .analysis-card p strong {
+      color: #2d382f;
+      font-weight: 800;
+    }
+    .analysis-card .sentence-en {
+      border: 1px solid #dce4d5;
+      border-radius: 7px;
+      background: #fbfcf8;
+      padding: 11px 13px;
+      margin: 8px 0 12px;
+    }
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      font-size: 14px;
+      line-height: 1.58;
+      overflow-wrap: anywhere;
+    }
+    th, td {
+      border-bottom: 1px solid #e6ebe1;
+      padding: 9px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th + th, td + td { border-left: 1px solid #e6ebe1; }
+    tr:last-child td { border-bottom: none; }
+    th {
+      background: #eef3eb;
+      color: #303a32;
+      font-weight: 900;
+    }
+    tbody tr:nth-child(even) td { background: #fbfcf8; }
+    .example-sentence {
+      position: relative;
+      display: inline-block;
+      max-width: 100%;
+    }
+    .example-en { color: #1f2937; }
+    .example-zh {
+      position: absolute;
+      left: 0;
+      top: calc(100% + 6px);
+      background: #121512;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.45;
+      padding: 5px 10px;
+      border-radius: 5px;
+      width: max-content;
+      max-width: min(320px, calc(100vw - 32px));
+      white-space: normal;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 20;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+    }
+    .example-zh::before {
+      content: "";
+      position: absolute;
+      top: -6px;
+      left: 12px;
+      border: 4px solid transparent;
+      border-bottom-color: #121512;
+    }
+    .example-sentence:hover .example-zh { opacity: 1; }
+    .pattern-card {
+      border: 1px solid #dce4d5;
+      border-radius: 8px;
+      background: #fff;
+      padding: 16px 18px;
+      margin: 14px 0;
+      box-shadow: 0 6px 18px rgba(28, 33, 29, 0.045);
+    }
+    .pattern-card h3 { margin: 0 0 10px; }
+    .pattern-examples {
+      list-style: none;
+      padding: 0;
+      margin: 8px 0;
+    }
+    .pattern-examples li {
+      padding: 7px 0;
+      border-bottom: 1px solid #e6ebe1;
+    }
+    .pattern-examples li:last-child { border-bottom: none; }
+    .mastery-list {
+      margin: 0;
+      padding-left: 20px;
+    }
+    ul { padding-left: 20px; }
+    @media (max-width: 720px) {
+      body { font-size: 16px; }
+      main { padding: 22px 14px 74px; }
+      .page-nav { margin-left: 62px; align-items: flex-start; }
+      .home-link { min-height: 34px; padding: 6px 10px; }
+      .site-label { display: none; }
+      .article-hero { padding: 24px 18px 22px; }
+      .article-hero::after { display: none; }
+      h1 { font-size: 24px; overflow-wrap: anywhere; word-break: break-word; }
+      h2 { font-size: 20px; }
+      .card { padding: 16px; }
+      .info dl { grid-template-columns: 1fr; gap: 3px 0; }
+      .sentence-unit { padding: 11px 12px; }
+      .sentence-en { font-size: 17px; }
+      table { display: block; overflow-x: auto; white-space: normal; }
+      .analysis-card { padding: 15px; }
+      .analysis-heading { align-items: flex-start; }
+      .toc-btn { left: 12px; top: 12px; }
+      .toc-panel { left: 12px; top: 72px; }
+    }
+    @media print {
+      body { background: #fff; }
+      body::before { display: none; }
+      main {
+        max-width: 720px;
+        padding: 24px 0;
+      }
+      .page-nav,
+      .toc-btn,
+      .toc-panel,
+  </style>
+</head>
+<body>
+  <button class="toc-btn" aria-label="打开目录" aria-expanded="false">目录</button>
+  <div class="toc-panel">
+    <div class="toc-title">目录</div>
+    <a href="#source">彩色标记版英文精读</a>
+    <a href="#analysis">逐句精读</a>
+    <a href="#vocab">技术词汇表</a>
+    <a href="#phrases">重点短语</a>
+    <a href="#patterns">高频句式</a>
+    <a href="#mastery">真正要掌握的内容</a>
+    <a href="#summary">一句话总结</a>
+  </div>
+
+  <main>
+    <nav class="page-nav" aria-label="页面导航">
+      <a class="home-link" href="../">&larr; 返回首页</a>
+      <span class="site-label">Codex Reading</span>
+    </nav>
+
+    <header class="article-hero">
+      <div class="hero-kicker">Tech English Reading</div>
+      <h1>2026-05-25 Codex 的交互模式</h1>
+    </header>
+
+    <section class="card info">
+      <h2>文档信息</h2>
+      <dl>
+        <dt>学习主题</dt>
+        <dd>Codex CLI 的 interactive mode，以及如何读懂终端交互工作流的英文说明</dd>
+        <dt>原文链接</dt>
+        <dd><a href="https://developers.openai.com/codex/cli/features">https://developers.openai.com/codex/cli/features</a></dd>
+        <dt>原文词数</dt>
+        <dd>91（基于官方页面信息改写；官方短摘录 17 词）</dd>
+        <dt>学习目标</dt>
+        <dd>读懂 interactive mode、terminal UI、repository、composer、in real time、approve / reject 等技术文档高频表达</dd>
+        <dt>难度评级</dt>
+        <dd>★★☆☆☆</dd>
+      </dl>
+      <p class="note">本文基于 OpenAI 官方 Codex CLI Features 页面生成。官方原文只保留一个短摘录；主要精读材料是根据官方页面信息改写的英文学习段落，不是官方逐字原文。</p>
+    </section>
+
+    <div class="legend-bar" aria-label="颜色图例">
+      <span class="legend-item"><span class="dot" style="background:#2563eb"></span>专有名词 / 产品名</span>
+      <span class="legend-item"><span class="dot" style="background:#7c3aed"></span>技术术语</span>
+      <span class="legend-item"><span class="dot" style="background:#059669"></span>动作动词</span>
+      <span class="legend-item"><span class="dot" style="background:#ea580c"></span>重要短语</span>
+      <span class="legend-item"><span class="dot" style="background:#dc2626"></span>句式结构</span>
+      <span class="legend-item"><span class="dot" style="background:#fef3c7;border:1px solid #92400e"></span>易误解词</span>
+    </div>
+
+    <section class="card" id="source">
+      <h2>彩色标记版英文精读</h2>
+      <p class="hint">点击英文句子 → 朗读 | 点击虚线词 → 朗读 | 悬停 → 看翻译/解释</p>
+      <p class="quote">官方短摘录：Codex launches into a full-screen terminal UI that can read your repository, make edits, and run commands.</p>
+
+      <div class="sentence-unit speakable-sentence" data-say="Codex interactive mode starts when you run the Codex command in your terminal." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/sent-01.mp3" tabindex="0" role="button" aria-label="点击朗读句子"><div class="sentence-en"><span class="proper-noun speakable-word" data-tip="专有名词：Codex，OpenAI 的编码代理产品" data-say="Codex" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-01.mp3">Codex</span> <span class="tech-term speakable-word" data-tip="技术术语：交互模式" data-say="interactive mode" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-02.mp3">interactive mode</span> <span class="action-verb speakable-word" data-tip="动作动词" data-say="starts" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-03.mp3">starts</span> when you <span class="key-phrase speakable-word" data-tip="重要短语" data-say="run the Codex command" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-04.mp3">run the codex command</span> in your <span class="tech-term speakable-word" data-tip="技术术语" data-say="terminal" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-05.mp3">terminal</span>.</div>
+        <div class="sentence-zh">当你在终端里运行 codex 命令时，Codex 的交互模式就会启动。</div>
+      </div>
+
+      <div class="sentence-unit speakable-sentence" data-say="It opens a full-screen terminal U I, where Codex can read your repository, make edits, and run commands while you work with it." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/sent-02.mp3" tabindex="0" role="button" aria-label="点击朗读句子"><div class="sentence-en">It <span class="action-verb speakable-word" data-tip="动作动词" data-say="opens" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-06.mp3">opens</span> a <span class="key-phrase speakable-word" data-tip="重要短语" data-say="full-screen terminal U I" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-07.mp3">full-screen terminal UI</span>, <span class="sentence-pattern speakable-word" data-tip="句式结构：where 连接界面和能力" data-say="where" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-08.mp3">where</span> <span class="proper-noun speakable-word" data-tip="专有名词：Codex，OpenAI 的编码代理产品" data-say="Codex" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-01.mp3">Codex</span> can <span class="action-verb speakable-word" data-tip="动作动词" data-say="read" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-09.mp3">read</span> your <span class="tech-term speakable-word" data-tip="技术术语" data-say="repository" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-10.mp3">repository</span>, <span class="key-phrase speakable-word" data-tip="重要短语" data-say="make edits" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-11.mp3">make edits</span>, and <span class="key-phrase speakable-word" data-tip="重要短语" data-say="run commands" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-12.mp3">run commands</span> while you work with it.</div>
+        <div class="sentence-zh">它会打开一个全屏终端界面，在这个界面里，Codex 可以读取你的代码仓库、修改文件、运行命令，并且和你一起推进任务。</div>
+      </div>
+
+      <div class="sentence-unit speakable-sentence" data-say="You can also start a session with an initial prompt, such as asking Codex to explain a codebase." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/sent-03.mp3" tabindex="0" role="button" aria-label="点击朗读句子"><div class="sentence-en">You can also <span class="key-phrase speakable-word" data-tip="重要短语" data-say="start a session with" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-13.mp3">start a session with</span> an <span class="tech-term speakable-word" data-tip="技术术语" data-say="initial prompt" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-14.mp3">initial prompt</span>, such as asking <span class="proper-noun speakable-word" data-tip="专有名词：Codex，OpenAI 的编码代理产品" data-say="Codex" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-01.mp3">Codex</span> to <span class="action-verb speakable-word" data-tip="动作动词" data-say="explain" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-15.mp3">explain</span> a <span class="tech-term speakable-word" data-tip="技术术语" data-say="codebase" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-16.mp3">codebase</span>.</div>
+        <div class="sentence-zh">你也可以带着一个初始提示词来开始会话，比如让 Codex 解释一个代码库。</div>
+      </div>
+
+      <div class="sentence-unit speakable-sentence" data-say="During the session, you send prompts, code snippets, or screenshots into the composer." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/sent-04.mp3" tabindex="0" role="button" aria-label="点击朗读句子"><div class="sentence-en">During the <span class="tech-term speakable-word" data-tip="技术术语" data-say="session" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-17.mp3">session</span>, you <span class="action-verb speakable-word" data-tip="动作动词" data-say="send" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-18.mp3">send</span> <span class="tech-term speakable-word" data-tip="技术术语" data-say="prompts" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-19.mp3">prompts</span>, <span class="tech-term speakable-word" data-tip="技术术语" data-say="code snippets" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-20.mp3">code snippets</span>, or <span class="tech-term speakable-word" data-tip="技术术语" data-say="screenshots" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-21.mp3">screenshots</span> into the <span class="tech-term speakable-word" data-tip="技术术语" data-say="composer" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-22.mp3">composer</span>.</div>
+        <div class="sentence-zh">在会话过程中，你可以把提示词、代码片段或截图发送到输入框里。</div>
+      </div>
+
+      <div class="sentence-unit speakable-sentence" data-say="Before changing files, Codex can explain its plan, and you can review its actions in real time, then approve or reject steps inline." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/sent-05.mp3" tabindex="0" role="button" aria-label="点击朗读句子"><div class="sentence-en"><span class="sentence-pattern speakable-word" data-tip="句式结构：Before doing X, Y can..." data-say="Before changing files" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-23.mp3">Before changing files</span>, <span class="proper-noun speakable-word" data-tip="专有名词：Codex，OpenAI 的编码代理产品" data-say="Codex" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-01.mp3">Codex</span> can <span class="action-verb speakable-word" data-tip="动作动词" data-say="explain" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-15.mp3">explain</span> its <span class="tech-term speakable-word" data-tip="技术术语" data-say="plan" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-24.mp3">plan</span>, and you can <span class="key-phrase speakable-word" data-tip="重要短语" data-say="review its actions" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-25.mp3">review its actions</span> <span class="key-phrase speakable-word" data-tip="重要短语" data-say="in real time" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-26.mp3">in real time</span>, then <span class="action-verb speakable-word" data-tip="动作动词" data-say="approve" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-27.mp3">approve</span> or <span class="action-verb speakable-word" data-tip="动作动词" data-say="reject" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-28.mp3">reject</span> steps <span class="confusing-word speakable-word" data-tip="易误解：inline 不是“在线”，这里是在当前界面或流程里" data-say="inline" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-29.mp3">inline</span>.</div>
+        <div class="sentence-zh">在修改文件之前，Codex 可以先解释它的计划；你可以实时审查它的操作，然后在界面内批准或拒绝这些步骤。</div>
+      </div>
+    </section>
+
+    <section class="analysis-section" id="analysis">
+      <h2>逐句精读</h2>
+
+      <article class="analysis-card">
+        <div class="analysis-heading"><span class="analysis-badge">句子 1</span><span class="analysis-title">启动入口</span></div>
+        <p><strong>英文原句：</strong></p>
+        <p class="sentence-en speakable-sentence" data-say="Codex interactive mode starts when you run the Codex command in your terminal." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/sent-01.mp3" tabindex="0" role="button" aria-label="点击朗读句子"><span class="proper-noun speakable-word" data-tip="专有名词：Codex，OpenAI 的编码代理产品" data-say="Codex" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-01.mp3">Codex</span> <span class="tech-term speakable-word" data-tip="技术术语：interactive mode，用户和工具来回输入、反馈、确认的运行模式" data-say="interactive mode" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-02.mp3">interactive mode</span> <span class="action-verb speakable-word" data-tip="动作动词：starts，某个模式或流程开始运行" data-say="starts" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-03.mp3">starts</span> when you <span class="key-phrase speakable-word" data-tip="重要短语：run the codex command，在终端执行 codex 命令" data-say="run the Codex command" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-04.mp3">run the codex command</span> in your <span class="tech-term speakable-word" data-tip="技术术语：terminal，输入命令和查看输出的界面" data-say="terminal" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-05.mp3">terminal</span>.</p>
+        <p><strong>自然翻译：</strong>当你在终端里运行 <code>codex</code> 命令时，Codex 的交互模式就会启动。</p>
+        <p><strong>句子主干：</strong>Codex interactive mode starts.</p>
+        <p><strong>结构拆解：</strong><code>when you run...</code> 是时间条件，说明“什么时候启动”。主句先说模式启动，后面再说明触发动作。</p>
+        <p><strong>大白话解释：</strong>这句讲入口：不是点网页按钮，而是在终端里运行 <code>codex</code>，进入可以持续对话的模式。</p>
+      </article>
+
+      <article class="analysis-card">
+        <div class="analysis-heading"><span class="analysis-badge">句子 2</span><span class="analysis-title">工作台能力</span></div>
+        <p><strong>英文原句：</strong></p>
+        <p class="sentence-en speakable-sentence" data-say="It opens a full-screen terminal U I, where Codex can read your repository, make edits, and run commands while you work with it." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/sent-02.mp3" tabindex="0" role="button" aria-label="点击朗读句子">It <span class="action-verb speakable-word" data-tip="动作动词：opens，打开一个界面或窗口" data-say="opens" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-06.mp3">opens</span> a <span class="key-phrase speakable-word" data-tip="重要短语：full-screen terminal UI，全屏终端界面" data-say="full-screen terminal U I" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-07.mp3">full-screen terminal UI</span>, <span class="sentence-pattern speakable-word" data-tip="句式结构：where 连接界面和这个界面里的能力" data-say="where" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-08.mp3">where</span> <span class="proper-noun speakable-word" data-tip="专有名词：Codex，OpenAI 的编码代理产品" data-say="Codex" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-01.mp3">Codex</span> can <span class="action-verb speakable-word" data-tip="动作动词：read，在这里是读取并理解项目内容" data-say="read" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-09.mp3">read</span> your <span class="tech-term speakable-word" data-tip="技术术语：repository，代码仓库，通常是项目代码集合" data-say="repository" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-10.mp3">repository</span>, <span class="key-phrase speakable-word" data-tip="重要短语：make edits，修改文件内容" data-say="make edits" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-11.mp3">make edits</span>, and <span class="key-phrase speakable-word" data-tip="重要短语：run commands，在终端执行命令" data-say="run commands" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-12.mp3">run commands</span> while you work with it.</p>
+        <p><strong>自然翻译：</strong>它会打开一个全屏终端界面，在这个界面里，Codex 可以读取你的代码仓库、修改文件、运行命令，并且和你一起推进任务。</p>
+        <p><strong>句子主干：</strong>It opens a UI.</p>
+        <p><strong>结构拆解：</strong>逗号后面的 <code>where Codex can...</code> 补充说明这个 UI 里能发生什么。后面三个动词并列：<code>read</code>、<code>make</code>、<code>run</code>。</p>
+        <p><strong>大白话解释：</strong>这句讲交互模式的工作台：Codex 在终端界面里接近你的代码，不只是聊天，还能实际操作。</p>
+      </article>
+
+      <article class="analysis-card">
+        <div class="analysis-heading"><span class="analysis-badge">句子 3</span><span class="analysis-title">初始提示词</span></div>
+        <p><strong>英文原句：</strong></p>
+        <p class="sentence-en speakable-sentence" data-say="You can also start a session with an initial prompt, such as asking Codex to explain a codebase." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/sent-03.mp3" tabindex="0" role="button" aria-label="点击朗读句子">You can also <span class="key-phrase speakable-word" data-tip="重要短语：start a session with，用某个内容开始一次会话" data-say="start a session with" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-13.mp3">start a session with</span> an <span class="tech-term speakable-word" data-tip="技术术语：initial prompt，启动时给模型的第一条任务说明" data-say="initial prompt" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-14.mp3">initial prompt</span>, such as asking <span class="proper-noun speakable-word" data-tip="专有名词：Codex，OpenAI 的编码代理产品" data-say="Codex" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-01.mp3">Codex</span> to <span class="action-verb speakable-word" data-tip="动作动词：explain，解释代码或概念" data-say="explain" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-15.mp3">explain</span> a <span class="tech-term speakable-word" data-tip="技术术语：codebase，一个项目的整体代码" data-say="codebase" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-16.mp3">codebase</span>.</p>
+        <p><strong>自然翻译：</strong>你也可以带着一个初始提示词来开始会话，比如让 Codex 解释一个代码库。</p>
+        <p><strong>句子主干：</strong>You can start a session.</p>
+        <p><strong>结构拆解：</strong><code>with an initial prompt</code> 说明开始会话时附带什么；<code>such as...</code> 给例子，说明这个 prompt 可以长什么样。</p>
+        <p><strong>大白话解释：</strong>这句讲启动方式：你可以先进 Codex 再提问，也可以启动时就把第一条任务一起带进去。</p>
+      </article>
+
+      <article class="analysis-card">
+        <div class="analysis-heading"><span class="analysis-badge">句子 4</span><span class="analysis-title">输入材料</span></div>
+        <p><strong>英文原句：</strong></p>
+        <p class="sentence-en speakable-sentence" data-say="During the session, you send prompts, code snippets, or screenshots into the composer." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/sent-04.mp3" tabindex="0" role="button" aria-label="点击朗读句子">During the <span class="tech-term speakable-word" data-tip="技术术语：session，一次持续的交互过程" data-say="session" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-17.mp3">session</span>, you <span class="action-verb speakable-word" data-tip="动作动词：send，发送给工具" data-say="send" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-18.mp3">send</span> <span class="tech-term speakable-word" data-tip="技术术语：prompts，给 AI 的任务说明" data-say="prompts" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-19.mp3">prompts</span>, <span class="tech-term speakable-word" data-tip="技术术语：code snippets，一小段相关代码" data-say="code snippets" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-20.mp3">code snippets</span>, or <span class="tech-term speakable-word" data-tip="技术术语：screenshots，作为视觉输入的截图" data-say="screenshots" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-21.mp3">screenshots</span> into the <span class="tech-term speakable-word" data-tip="技术术语：composer，组织并发送消息的输入区域" data-say="composer" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-22.mp3">composer</span>.</p>
+        <p><strong>自然翻译：</strong>在会话过程中，你可以把提示词、代码片段或截图发送到输入框里。</p>
+        <p><strong>句子主干：</strong>You send prompts into the composer.</p>
+        <p><strong>结构拆解：</strong><code>During the session</code> 是时间背景。句子中间列了三个可以发送的东西：prompts、code snippets、screenshots。</p>
+        <p><strong>大白话解释：</strong>这句讲你能给 Codex 什么输入：不只是文字问题，也可以给代码片段和截图。</p>
+      </article>
+
+      <article class="analysis-card">
+        <div class="analysis-heading"><span class="analysis-badge">句子 5</span><span class="analysis-title">实时审查</span></div>
+        <p><strong>英文原句：</strong></p>
+        <p class="sentence-en speakable-sentence" data-say="Before changing files, Codex can explain its plan, and you can review its actions in real time, then approve or reject steps inline." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/sent-05.mp3" tabindex="0" role="button" aria-label="点击朗读句子"><span class="sentence-pattern speakable-word" data-tip="句式结构：Before doing X, Y can...，先后顺序很重要" data-say="Before changing files" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-23.mp3">Before changing files</span>, <span class="proper-noun speakable-word" data-tip="专有名词：Codex，OpenAI 的编码代理产品" data-say="Codex" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-01.mp3">Codex</span> can <span class="action-verb speakable-word" data-tip="动作动词：explain，解释原因、计划或代码" data-say="explain" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-15.mp3">explain</span> its <span class="tech-term speakable-word" data-tip="技术术语：plan，工具准备怎样完成任务" data-say="plan" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-24.mp3">plan</span>, and you can <span class="key-phrase speakable-word" data-tip="重要短语：review its actions，审查它准备或正在执行的操作" data-say="review its actions" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-25.mp3">review its actions</span> <span class="key-phrase speakable-word" data-tip="重要短语：in real time，实时，不等事后再看" data-say="in real time" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-26.mp3">in real time</span>, then <span class="action-verb speakable-word" data-tip="动作动词：approve，批准并放行" data-say="approve" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-27.mp3">approve</span> or <span class="action-verb speakable-word" data-tip="动作动词：reject，拒绝并拦下" data-say="reject" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-28.mp3">reject</span> steps <span class="confusing-word speakable-word" data-tip="易误解：inline 不是“在线”，这里是在当前界面或流程里完成" data-say="inline" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/term-29.mp3">inline</span>.</p>
+        <p><strong>自然翻译：</strong>在修改文件之前，Codex 可以先解释它的计划；你可以实时审查它的操作，然后在界面内批准或拒绝这些步骤。</p>
+        <p><strong>句子主干：</strong>Codex can explain its plan, and you can review its actions.</p>
+        <p><strong>结构拆解：</strong><code>Before changing files</code> 放在句首，强调修改前先做什么。<code>and</code> 连接两件事：Codex 解释计划；你审查操作。</p>
+        <p><strong>大白话解释：</strong>这句讲安全感来源：Codex 不是悄悄改文件，你可以看到它打算怎么做，并且实时决定放行还是拦下。</p>
+      </article>
+    </section>
+
+    <section class="card" id="vocab">
+      <h2>技术词汇表</h2>
+      <table>
+        <thead><tr><th>英文</th><th>本文意思</th><th>普通意思</th><th>技术文档常见意思</th><th>记忆提示</th></tr></thead>
+        <tbody>
+          <tr><td><span class="speakable-term" data-say="interactive mode" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/vocab-01.mp3" tabindex="0" role="button" aria-label="点击朗读">interactive mode</span></td><td>交互模式</td><td>interactive = 互动的</td><td>用户和工具来回输入、反馈、确认的运行模式</td><td>interactive 重点是“来回互动”</td></tr>
+          <tr><td><span class="speakable-term" data-say="terminal U I" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/vocab-02.mp3" tabindex="0" role="button" aria-label="点击朗读">terminal UI</span></td><td>终端界面</td><td>UI = 用户界面</td><td>在终端里显示的操作界面</td><td>UI 不一定是网页</td></tr>
+          <tr><td><span class="speakable-term" data-say="repository" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/vocab-03.mp3" tabindex="0" role="button" aria-label="点击朗读">repository</span></td><td>代码仓库</td><td>仓库、储藏处</td><td>存放项目代码和历史记录的地方</td><td>repo = 项目代码集合</td></tr>
+          <tr><td><span class="speakable-term" data-say="make edits" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/vocab-04.mp3" tabindex="0" role="button" aria-label="点击朗读">make edits</span></td><td>修改文件</td><td>edit = 编辑</td><td>对代码或文档做具体改动</td><td>make edits = 动手改</td></tr>
+          <tr><td><span class="speakable-term" data-say="run commands" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/vocab-05.mp3" tabindex="0" role="button" aria-label="点击朗读">run commands</span></td><td>执行命令</td><td>command = 命令</td><td>在终端里运行某条命令</td><td>run = 执行，不是跑步</td></tr>
+          <tr><td><span class="speakable-term" data-say="session" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/vocab-06.mp3" tabindex="0" role="button" aria-label="点击朗读">session</span></td><td>会话</td><td>一段时间 / 会议</td><td>一次持续的交互过程</td><td>打开到关闭算一次</td></tr>
+          <tr><td><span class="speakable-term" data-say="initial prompt" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/vocab-07.mp3" tabindex="0" role="button" aria-label="点击朗读">initial prompt</span></td><td>初始提示词</td><td>initial = 最初的</td><td>启动任务时给模型的第一条指令</td><td>initial = 一开始就带上</td></tr>
+          <tr><td><span class="speakable-term" data-say="codebase" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/vocab-08.mp3" tabindex="0" role="button" aria-label="点击朗读">codebase</span></td><td>代码库</td><td>无常见口语义</td><td>一个项目的整体代码</td><td>base = 基础集合</td></tr>
+          <tr><td><span class="speakable-term" data-say="code snippet" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/vocab-09.mp3" tabindex="0" role="button" aria-label="点击朗读">code snippet</span></td><td>代码片段</td><td>snippet = 小片段</td><td>一小段示例或相关代码</td><td>snippet 不等于完整文件</td></tr>
+          <tr><td><span class="speakable-term" data-say="screenshot" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/vocab-10.mp3" tabindex="0" role="button" aria-label="点击朗读">screenshot</span></td><td>截图</td><td>屏幕截图</td><td>作为视觉输入的图片</td><td>screen + shot</td></tr>
+          <tr><td><span class="speakable-term" data-say="composer" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/vocab-11.mp3" tabindex="0" role="button" aria-label="点击朗读">composer</span></td><td>输入框 / 编辑区</td><td>作曲家</td><td>组织并发送消息的输入区域</td><td>compose = 组织内容</td></tr>
+          <tr><td><span class="speakable-term" data-say="in real time" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/vocab-12.mp3" tabindex="0" role="button" aria-label="点击朗读">in real time</span></td><td>实时</td><td>真实时间</td><td>事情发生时马上看到或处理</td><td>real time = 不等事后</td></tr>
+          <tr><td><span class="speakable-term" data-say="approve" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/vocab-13.mp3" tabindex="0" role="button" aria-label="点击朗读">approve</span></td><td>批准</td><td>同意、认可</td><td>允许某个步骤继续执行</td><td>approve = 放行</td></tr>
+          <tr><td><span class="speakable-term" data-say="reject" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/vocab-14.mp3" tabindex="0" role="button" aria-label="点击朗读">reject</span></td><td>拒绝</td><td>拒绝</td><td>阻止某个步骤继续执行</td><td>reject = 拦下</td></tr>
+          <tr><td><span class="speakable-term" data-say="inline" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/vocab-15.mp3" tabindex="0" role="button" aria-label="点击朗读">inline</span></td><td>在当前流程内</td><td>排成一行</td><td>不跳出当前界面或上下文</td><td>不是 online</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card" id="phrases">
+      <h2>重点短语</h2>
+      <p class="hint">悬停造句 → 显示中文翻译 | 点击英文短语或造句 → 朗读</p>
+      <table>
+        <thead><tr><th>短语</th><th>中文意思</th><th>为什么重要</th><th>自己造句</th></tr></thead>
+        <tbody>
+          <tr><td><span class="speakable-term" data-say="run the Codex command" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/phrase-01.mp3" tabindex="0" role="button" aria-label="点击朗读">run the codex command</span></td><td>运行 codex 命令</td><td>说明 CLI 工具的启动方式</td><td><div class="example-sentence"><span class="example-en speakable-example" data-say="Run the Codex command in your project folder." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/example-01.mp3" tabindex="0" role="button" aria-label="点击朗读例句">Run the codex command in your project folder.</span><span class="example-zh">在你的项目文件夹里运行 codex 命令。</span></div></td></tr>
+          <tr><td><span class="speakable-term" data-say="full-screen terminal U I" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/phrase-02.mp3" tabindex="0" role="button" aria-label="点击朗读">full-screen terminal UI</span></td><td>全屏终端界面</td><td>说明交互模式不是普通命令输出</td><td><div class="example-sentence"><span class="example-en speakable-example" data-say="The tool opens a full-screen terminal U I." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/example-02.mp3" tabindex="0" role="button" aria-label="点击朗读例句">The tool opens a full-screen terminal UI.</span><span class="example-zh">这个工具会打开一个全屏终端界面。</span></div></td></tr>
+          <tr><td><span class="speakable-term" data-say="read your repository" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/phrase-03.mp3" tabindex="0" role="button" aria-label="点击朗读">read your repository</span></td><td>读取你的代码仓库</td><td>说明 Codex 能理解项目上下文</td><td><div class="example-sentence"><span class="example-en speakable-example" data-say="Codex can read your repository before making edits." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/example-03.mp3" tabindex="0" role="button" aria-label="点击朗读例句">Codex can read your repository before making edits.</span><span class="example-zh">Codex 可以先读取你的代码仓库，再做修改。</span></div></td></tr>
+          <tr><td><span class="speakable-term" data-say="make edits" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/phrase-04.mp3" tabindex="0" role="button" aria-label="点击朗读">make edits</span></td><td>做修改</td><td>AI 编码工具最常见动作之一</td><td><div class="example-sentence"><span class="example-en speakable-example" data-say="The agent can make edits to several files." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/example-04.mp3" tabindex="0" role="button" aria-label="点击朗读例句">The agent can make edits to several files.</span><span class="example-zh">这个代理可以修改多个文件。</span></div></td></tr>
+          <tr><td><span class="speakable-term" data-say="run commands" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/phrase-05.mp3" tabindex="0" role="button" aria-label="点击朗读">run commands</span></td><td>执行命令</td><td>CLI 场景里的核心能力</td><td><div class="example-sentence"><span class="example-en speakable-example" data-say="You can let Codex run commands after review." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/example-05.mp3" tabindex="0" role="button" aria-label="点击朗读例句">You can let Codex run commands after review.</span><span class="example-zh">审查之后，你可以让 Codex 执行命令。</span></div></td></tr>
+          <tr><td><span class="speakable-term" data-say="start a session with" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/phrase-06.mp3" tabindex="0" role="button" aria-label="点击朗读">start a session with</span></td><td>用某个内容开始会话</td><td>读懂启动参数和初始 prompt 很关键</td><td><div class="example-sentence"><span class="example-en speakable-example" data-say="Start a session with a clear task." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/example-06.mp3" tabindex="0" role="button" aria-label="点击朗读例句">Start a session with a clear task.</span><span class="example-zh">用一个清楚的任务开始会话。</span></div></td></tr>
+          <tr><td><span class="speakable-term" data-say="initial prompt" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/phrase-07.mp3" tabindex="0" role="button" aria-label="点击朗读">initial prompt</span></td><td>初始提示词</td><td>AI 工具文档高频表达</td><td><div class="example-sentence"><span class="example-en speakable-example" data-say="An initial prompt helps Codex understand your goal." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/example-07.mp3" tabindex="0" role="button" aria-label="点击朗读例句">An initial prompt helps Codex understand your goal.</span><span class="example-zh">初始提示词能帮助 Codex 理解你的目标。</span></div></td></tr>
+          <tr><td><span class="speakable-term" data-say="review actions in real time" data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/phrase-08.mp3" tabindex="0" role="button" aria-label="点击朗读">review actions in real time</span></td><td>实时审查操作</td><td>体现交互模式的控制感</td><td><div class="example-sentence"><span class="example-en speakable-example" data-say="Developers review actions in real time." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/example-08.mp3" tabindex="0" role="button" aria-label="点击朗读例句">Developers review actions in real time.</span><span class="example-zh">开发者会实时审查操作。</span></div></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card" id="patterns">
+      <h2>高频句式</h2>
+      <p class="hint">悬停例句 → 显示中文翻译 | 点击英文例句 → 朗读</p>
+
+      <div class="pattern-card">
+        <h3>句式 1：X starts when you...</h3>
+        <p><strong>意思：</strong>当你做某个动作时，X 就开始。</p>
+        <ul class="pattern-examples">
+          <li class="example-sentence"><span class="example-en speakable-example" data-say="Codex interactive mode starts when you run the Codex command." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/pattern-ex-01.mp3" tabindex="0" role="button" aria-label="点击朗读例句">Codex interactive mode starts when you run the codex command.</span><span class="example-zh">当你运行 codex 命令时，Codex 交互模式就会启动。</span></li>
+          <li class="example-sentence"><span class="example-en speakable-example" data-say="The setup starts when you install the package." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/pattern-ex-02.mp3" tabindex="0" role="button" aria-label="点击朗读例句">The setup starts when you install the package.</span><span class="example-zh">当你安装这个包时，设置流程就会开始。</span></li>
+          <li class="example-sentence"><span class="example-en speakable-example" data-say="The session starts when you send the first prompt." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/pattern-ex-03.mp3" tabindex="0" role="button" aria-label="点击朗读例句">The session starts when you send the first prompt.</span><span class="example-zh">当你发送第一条提示词时，会话就开始了。</span></li>
+        </ul>
+        <p><strong>还能这样用：</strong>技术文档经常用这个句式解释“触发条件”。读的时候先抓 <code>X starts</code>，再看 <code>when you...</code> 后面的动作。</p>
+      </div>
+
+      <div class="pattern-card">
+        <h3>句式 2：It opens a Y, where X can...</h3>
+        <p><strong>意思：</strong>它打开一个 Y，在那里 X 可以做某些事。</p>
+        <ul class="pattern-examples">
+          <li class="example-sentence"><span class="example-en speakable-example" data-say="It opens a terminal U I, where Codex can read your repository." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/pattern-ex-04.mp3" tabindex="0" role="button" aria-label="点击朗读例句">It opens a terminal UI, where Codex can read your repository.</span><span class="example-zh">它打开一个终端界面，在那里 Codex 可以读取你的代码仓库。</span></li>
+          <li class="example-sentence"><span class="example-en speakable-example" data-say="It opens a dashboard, where users can review logs." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/pattern-ex-05.mp3" tabindex="0" role="button" aria-label="点击朗读例句">It opens a dashboard, where users can review logs.</span><span class="example-zh">它打开一个仪表盘，用户可以在那里查看日志。</span></li>
+          <li class="example-sentence"><span class="example-en speakable-example" data-say="It opens an editor, where you can change the file." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/pattern-ex-06.mp3" tabindex="0" role="button" aria-label="点击朗读例句">It opens an editor, where you can change the file.</span><span class="example-zh">它打开一个编辑器，你可以在那里修改文件。</span></li>
+        </ul>
+        <p><strong>还能这样用：</strong><code>where</code> 不一定只表示地点，它也常把“界面 / 环境”和“在里面能做什么”连接起来。</p>
+      </div>
+
+      <div class="pattern-card">
+        <h3>句式 3：You can also start X with Y</h3>
+        <p><strong>意思：</strong>你也可以用 Y 来开始 X。</p>
+        <ul class="pattern-examples">
+          <li class="example-sentence"><span class="example-en speakable-example" data-say="You can also start a session with an initial prompt." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/pattern-ex-07.mp3" tabindex="0" role="button" aria-label="点击朗读例句">You can also start a session with an initial prompt.</span><span class="example-zh">你也可以用一个初始提示词来开始会话。</span></li>
+          <li class="example-sentence"><span class="example-en speakable-example" data-say="You can also start the app with a config file." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/pattern-ex-08.mp3" tabindex="0" role="button" aria-label="点击朗读例句">You can also start the app with a config file.</span><span class="example-zh">你也可以用配置文件来启动应用。</span></li>
+          <li class="example-sentence"><span class="example-en speakable-example" data-say="You can also start the command with extra flags." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/pattern-ex-09.mp3" tabindex="0" role="button" aria-label="点击朗读例句">You can also start the command with extra flags.</span><span class="example-zh">你也可以带上额外参数来运行这个命令。</span></li>
+        </ul>
+        <p><strong>还能这样用：</strong>看到 <code>also</code>，通常说明文档在补充另一种用法；<code>with</code> 后面常常是工具、参数或附带内容。</p>
+      </div>
+
+      <div class="pattern-card">
+        <h3>句式 4：Before doing X, Y can...</h3>
+        <p><strong>意思：</strong>在做 X 之前，Y 可以先做某件事。</p>
+        <ul class="pattern-examples">
+          <li class="example-sentence"><span class="example-en speakable-example" data-say="Before changing files, Codex can explain its plan." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/pattern-ex-10.mp3" tabindex="0" role="button" aria-label="点击朗读例句">Before changing files, Codex can explain its plan.</span><span class="example-zh">在修改文件之前，Codex 可以解释它的计划。</span></li>
+          <li class="example-sentence"><span class="example-en speakable-example" data-say="Before running commands, the tool can ask for approval." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/pattern-ex-11.mp3" tabindex="0" role="button" aria-label="点击朗读例句">Before running commands, the tool can ask for approval.</span><span class="example-zh">在执行命令之前，这个工具可以请求批准。</span></li>
+          <li class="example-sentence"><span class="example-en speakable-example" data-say="Before deploying the app, you can review the changes." data-audio="_audio/2026-05-25%20Codex%20%E7%9A%84%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F/pattern-ex-12.mp3" tabindex="0" role="button" aria-label="点击朗读例句">Before deploying the app, you can review the changes.</span><span class="example-zh">在部署应用之前，你可以审查这些修改。</span></li>
+        </ul>
+        <p><strong>还能这样用：</strong>这个句式经常出现在安全、审批、工作流说明里。<code>Before...</code> 帮你判断步骤顺序。</p>
+      </div>
+    </section>
+
+    <section class="card" id="mastery">
+      <h2>本文真正要掌握的内容</h2>
+      <ul class="mastery-list">
+        <li>你要掌握的词：interactive mode、terminal UI、repository、session、initial prompt、codebase、composer、approve、reject、inline</li>
+        <li>你要掌握的短语：run the codex command、full-screen terminal UI、read your repository、make edits、run commands、review actions in real time</li>
+        <li>你要掌握的句式：X starts when you...、It opens a Y, where X can...、You can also start X with Y、Before doing X, Y can...</li>
+        <li>你要能用中文说清楚的问题：Codex 的 interactive mode 是什么？为什么它叫交互模式？你能给它哪些输入？它改文件前你能做什么审查？</li>
+      </ul>
+    </section>
+
+    <section class="card" id="summary">
+      <h2>一句话总结</h2>
+      <p>Codex 的交互模式就是在终端里打开一个全屏工作界面，让你和 Codex 边对话边看计划、审查操作、批准或拒绝修改。</p>
+    </section>
+  </main>
+
+  <script>
+    const tocBtn = document.querySelector('.toc-btn');
+    const tocPanel = document.querySelector('.toc-panel');
+    const tipLayer = document.createElement('div');
+    let englishVoice = null;
+    let currentAudio = null;
+    let currentSpeakingElement = null;
+
+    tipLayer.className = 'tip-layer';
+    document.body.appendChild(tipLayer);
+
+    function pickEnglishVoice() {
+      if (!('speechSynthesis' in window)) return;
+      const voices = window.speechSynthesis.getVoices();
+      const naturalName = /natural|online|neural|aria|jenny|guy|ava|andrew|emma|brian|samantha|daniel/i;
+      const avoidName = /compact|legacy|robot|espeak/i;
+      englishVoice =
+        voices.find(function (voice) {
+          return /^en[-_]/i.test(voice.lang) && naturalName.test(voice.name) && !avoidName.test(voice.name);
+        }) ||
+        voices.find(function (voice) {
+          return /^en[-_]/i.test(voice.lang) && !avoidName.test(voice.name);
+        }) ||
+        voices.find(function (voice) {
+          return /^en[-_]/i.test(voice.lang);
+        }) ||
+        null;
+    }
+
+    if ('speechSynthesis' in window) {
+      pickEnglishVoice();
+      window.speechSynthesis.onvoiceschanged = pickEnglishVoice;
+    }
+
+    function clearPlayingState() {
+      if (currentSpeakingElement) {
+        currentSpeakingElement.classList.remove('playing');
+        currentSpeakingElement = null;
+      }
+    }
+
+    function markPlaying(element) {
+      clearPlayingState();
+      if (element) {
+        currentSpeakingElement = element;
+        currentSpeakingElement.classList.add('playing');
+      }
+    }
+
+    function stopCurrentAudio() {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+      }
+    }
+
+    function speakText(text, element) {
+      stopCurrentAudio();
+      if (!('speechSynthesis' in window)) {
+        window.alert('当前浏览器不支持朗读。');
+        return;
+      }
+      window.speechSynthesis.cancel();
+      markPlaying(element);
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      utterance.rate = 0.82;
+      utterance.pitch = 1;
+      if (englishVoice) utterance.voice = englishVoice;
+      utterance.onend = clearPlayingState;
+      utterance.onerror = clearPlayingState;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function playAudioOrSpeak(element) {
+      const text = element.dataset.say || '';
+      const audioSrc = element.dataset.audio;
+      if (!text && !audioSrc) return;
+      if (audioSrc) {
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        stopCurrentAudio();
+        markPlaying(element);
+        const audio = new Audio(audioSrc);
+        currentAudio = audio;
+        audio.addEventListener('ended', function () {
+          if (currentAudio === audio) currentAudio = null;
+          clearPlayingState();
+        }, { once: true });
+        audio.addEventListener('error', function () {
+          if (currentAudio === audio) currentAudio = null;
+          clearPlayingState();
+          speakText(text, element);
+        }, { once: true });
+        const playPromise = audio.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+          playPromise.catch(function () {
+            if (currentAudio === audio) currentAudio = null;
+            clearPlayingState();
+            speakText(text, element);
+          });
+        }
+        return;
+      }
+      speakText(text, element);
+    }
+
+    document.querySelectorAll('.speakable-word[data-say], .speakable-sentence[data-say], .speakable-example[data-say], .speakable-term[data-say]').forEach(function (target) {
+      target.setAttribute('tabindex', target.getAttribute('tabindex') || '0');
+      target.setAttribute('role', target.getAttribute('role') || 'button');
+      if (!target.getAttribute('aria-label')) {
+        target.setAttribute('aria-label', target.classList.contains('speakable-sentence') ? '点击朗读句子' : '点击朗读');
+      }
+      target.addEventListener('click', function (event) {
+        event.stopPropagation();
+        playAudioOrSpeak(target);
+      });
+      target.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          playAudioOrSpeak(target);
+        }
+      });
+    });
+    function positionTip(target) {
+      const text = target.dataset.tip;
+      if (!text) return;
+      tipLayer.textContent = text;
+      tipLayer.classList.add('visible');
+      tipLayer.style.left = '0px';
+      tipLayer.style.top = '0px';
+
+      const targetRect = target.getBoundingClientRect();
+      const tipRect = tipLayer.getBoundingClientRect();
+      const gap = 8;
+      const margin = 8;
+      let left = targetRect.left;
+      let top = targetRect.top - tipRect.height - gap;
+
+      if (top < margin) {
+        top = targetRect.bottom + gap;
+      }
+      if (left + tipRect.width > window.innerWidth - margin) {
+        left = window.innerWidth - tipRect.width - margin;
+      }
+      if (left < margin) {
+        left = margin;
+      }
+
+      tipLayer.style.left = left + 'px';
+      tipLayer.style.top = top + 'px';
+    }
+
+    function hideTip() {
+      tipLayer.classList.remove('visible');
+    }
+
+    document.querySelectorAll('[data-tip]').forEach(function (target) {
+      target.addEventListener('mouseenter', function () { positionTip(target); });
+      target.addEventListener('focus', function () { positionTip(target); });
+      target.addEventListener('mouseleave', hideTip);
+      target.addEventListener('blur', hideTip);
+    });
+
+    window.addEventListener('scroll', hideTip, { passive: true });
+    window.addEventListener('resize', hideTip);
+
+    tocBtn.addEventListener('click', function (event) {
+      event.stopPropagation();
+      const open = tocPanel.classList.toggle('open');
+      tocBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
+    function closeToc() {
+      tocPanel.classList.remove('open');
+      tocBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    tocPanel.querySelectorAll('a').forEach(function (link) {
+      link.addEventListener('click', closeToc);
+    });
+
+    document.addEventListener('click', function (event) {
+      if (!tocPanel.contains(event.target) && !tocBtn.contains(event.target)) closeToc();
+    });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') closeToc();
+    });
+  </script>
+</body>
+</html>
