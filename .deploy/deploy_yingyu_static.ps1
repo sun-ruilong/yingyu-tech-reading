@@ -14,7 +14,7 @@ $archive = Join-Path $PSScriptRoot 'yingyu-static.tar.gz'
 $sshKey = Join-Path $env:USERPROFILE '.ssh\yingyu_tencent_ed25519'
 $remote = 'root@111.230.71.5'
 $remoteRoot = '/www/wwwroot/yingyu'
-$publicUrl = 'http://en.nextlong.cn/'
+$publicUrl = 'https://en.nextlong.cn/'
 
 if (-not $sourceDir -or -not (Test-Path -LiteralPath $sourceDir)) {
   throw "Source directory not found: $sourceDir"

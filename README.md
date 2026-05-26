@@ -10,4 +10,4 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\.deploy\deploy_yingyu_
 
 当前线上入口：
 
-- http://en.nextlong.cn/
+- https://en.nextlong.cn/
